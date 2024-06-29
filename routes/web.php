@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\MessageController;
@@ -37,10 +38,11 @@ Route::middleware('auth')->group(function () {
         // 拒絕好友邀請
         Route::delete('/cancel', [FriendController::class, 'cancel'])->name('cancel');
         Route::get('/chat/{friend_id}', [MessageController::class, 'room'])->name('chatroom');
-//        Route::post('/broadcast', [MessageController::class, 'broadcast'])->name('broadcast');
-//        Route::post('/receive', [MessageController::class, 'receive'])->name('receive');
+        Route::post('/send', [MessageController::class, 'sendMessage'])->name('send');
     });
 });
+
+Route::get('/index', [HomeController::class, 'index'])->middleware(['auth', 'verified']);
 
 
 
