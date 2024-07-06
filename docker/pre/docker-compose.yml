@@ -1,0 +1,127 @@
+services:
+    laravel:
+        image: paxton0222/web_weather:${TAG:-latest}
+        platform: ${ARCH:-linux/amd64}
+        build:
+            context: ../../
+            dockerfile: ./docker/Dockerfile
+        env_file:
+            - .env
+        networks:
+            - dev
+        restart: unless-stopped
+        depends_on:
+            - redis
+            - mariadb
+    queue:
+        image: paxton0222/web_weather:${TAG:-latest}
+        platform: ${ARCH:-linux/amd64}
+        build:
+            context: ../../
+            dockerfile: ./docker/Dockerfile
+        env_file:
+            - .env
+        networks:
+            - dev
+        restart: unless-stopped
+        depends_on:
+            - laravel
+            - redis
+            - mariadb
+        command: ['php', '/var/www/html/artisan', 'queue:work']
+    mariadb:
+        image: mariadb:10
+        ports:
+            - 3306:3306
+        env_file:
+            - .env
+        networks:
+            - dev
+        volumes:
+            - db:/var/lib/mysql
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - 'p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+        restart: unless-stopped
+    redis:
+        image: redis:alpine
+        ports:
+            - 6379:6379
+        volumes:
+            - redis:/data
+        env_file:
+            - .env
+        healthcheck:
+            test:
+                - CMD
+                - redis-cli
+                - ping
+            retries: 3
+            timeout: 5s
+        restart: unless-stopped
+        networks:
+            - dev
+    nginx:
+        container_name: ${APP_DOMAIN}
+        image: paxton0222/nginx-acme
+        privileged: true
+        volumes:
+            - nginx_data:/etc/nginx
+            - nginx_cert:/acme.sh
+            - nginx_log:/var/log/nginx
+            - ./conf.d:/etc/nginx/conf.d
+        env_file:
+            - .env
+        ports:
+            - 80:80
+            - 443:443
+        networks:
+            - dev
+        restart: unless-stopped
+        depends_on:
+            - laravel
+    cloudflared:
+        image: cloudflare/cloudflared:latest
+        container_name: cloudflared
+        command: tunnel --no-autoupdate run
+        env_file:
+            - .env
+        networks:
+            - dev
+        depends_on:
+            - nginx
+        restart: unless-stopped
+        environment:
+            - TUNNEL_TOKEN=eyJhIjoiNTljNDMyZjU5OWRlZDU5YWRmZjVjYmU1MTc4NDliNzgiLCJ0IjoiYTFkMDJhYjMtMzk3ZC00MzNmLTg1OTAtNTdjZTlkYjNiMDIwIiwicyI6Ik9HTXpZMkkwTjJRdE56STVaQzAwTTJSakxUa3daVGd0WWpKbU5UTXpNamRtWkRJdyJ9
+
+    reverb:
+        image: paxton0222/web_weather:${TAG:-latest}
+        platform: ${ARCH:-linux/amd64}
+        build:
+            context: ../../
+            dockerfile: ./docker/Dockerfile
+        env_file:
+            - .env
+        networks:
+            - dev
+        restart: unless-stopped
+        depends_on:
+            - laravel
+            - redis
+            - mariadb
+        command: ['php', '/var/www/html/artisan', 'reverb:start', '--host=0.0.0.0','--port=8080']
+networks:
+    dev:
+
+volumes:
+    db:
+        driver: local
+    redis:
+    nginx_data:
+    nginx_cert:
+    nginx_log:

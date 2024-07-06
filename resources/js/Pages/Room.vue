@@ -51,7 +51,7 @@ const sendMessage = () => {
                     <div v-if="message.sender.id === id" >
                         <div class="right message">
                             <p>{{ message.message }}</p>
-                            <img width="48" height="48" src="https://img.icons8.com/color/48/user-male-circle--v1.png" alt="Profile picture" style="margin-left: 10px"/>
+<!--                            <img width="48" height="48" src="https://img.icons8.com/color/48/user-male-circle&#45;&#45;v1.png" alt="Profile picture" style="margin-left: 10px"/>-->
                         </div>
                     </div>
                     <div v-else class="left message">
@@ -171,10 +171,6 @@ a {
 .left.message{
     justify-content: flex-start;
     margin-left: 20px;
-}
-
-.right.message > img{
-    display: inline-block;
 }
 
 .right.message{
