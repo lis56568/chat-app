@@ -97,19 +97,6 @@ services:
         restart: unless-stopped
         depends_on:
             - laravel
-    cloudflared:
-        image: cloudflare/cloudflared:latest
-        container_name: cloudflared
-        command: tunnel --no-autoupdate run
-        env_file:
-            - .env
-        networks:
-            - dev
-        depends_on:
-            - nginx
-        restart: unless-stopped
-        environment:
-            - TUNNEL_TOKEN=eyJhIjoiNTljNDMyZjU5OWRlZDU5YWRmZjVjYmU1MTc4NDliNzgiLCJ0IjoiYTFkMDJhYjMtMzk3ZC00MzNmLTg1OTAtNTdjZTlkYjNiMDIwIiwicyI6Ik9HTXpZMkkwTjJRdE56STVaQzAwTTJSakxUa3daVGd0WWpKbU5UTXpNamRtWkRJdyJ9
 
     reverb:
         image: paxton0222/web_weather:${TAG:-latest}
