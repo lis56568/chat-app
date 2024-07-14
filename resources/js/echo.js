@@ -17,7 +17,7 @@ window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: 'bnxrlamr45txee3hryup',
-    wsHost: 'lis56568-service.com',
+    wsHost: 'ws.lis56568-service.com',
     wsPort: 80,
     wssPort: 443,
     forceTLS: 'https',
