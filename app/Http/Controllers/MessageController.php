@@ -20,12 +20,11 @@ class MessageController extends Controller
     public function sendMessage(Request $request)
     {
         $message = Chat::create([
-            'sender_id' => auth()->id(),
+            'sender_id' => $request->sender_id,
             'receiver_id' => $request->receiver_id,
-            'message' => $request->text
+            'message' => $request->message
         ]);
 
         broadcast(new MessageSent($message->message, $message->sender()->first(), $message->receiver()->first()))->toOthers();
-
     }
 }

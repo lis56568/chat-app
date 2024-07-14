@@ -32,6 +32,15 @@ return [
 
         'reverb' => [
             'driver' => 'reverb',
+//            'key' => 'bnxrlamr45txee3hryup',
+//            'secret' => 'fsqdmzlztdphgdtrfsba',
+//            'app_id' => '145124',
+//            'options' => [
+//                'host' => 'reverb.lis56568-service.com',
+//                'port' => 443,
+//                'scheme' => 'https',
+//                'useTLS' => 'https',
+//            ],
             'key' => env('REVERB_APP_KEY'),
             'secret' => env('REVERB_APP_SECRET'),
             'app_id' => env('REVERB_APP_ID'),

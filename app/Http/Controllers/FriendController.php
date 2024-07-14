@@ -14,7 +14,7 @@ class FriendController extends Controller
      * Display a listing of the resource.
      * return view 朋友列表頁面
      */
-    public function index()
+    public function index(): \Inertia\Response
     {
         $temps = auth()->user()->friends()->get();
         $friends = [];
@@ -24,20 +24,14 @@ class FriendController extends Controller
                 $friends[] = $user->first();
             }
         }
+        $user = User::where('id', auth()->id())->get();
+
         return Inertia::render('Friend', [
             'friends' => $friends,
             'notice' => session()->get('notice'), // 传递通知信息
-            'csrfToken' => csrf_token()
+            'csrfToken' => csrf_token(),
+            'user' => $user,
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        // 新增好友
-        // return view('');
     }
 
     /**
@@ -51,29 +45,29 @@ class FriendController extends Controller
         ]);
         $id = $request->input('friend_id');
         if ($id == auth()->id()) {
-            return Inertia::location('/friend')->with('notice', '不可加入自己');
+            return Inertia::location('/friend/addpage')->with('notice', '不可加入自己');
         }
         $existFriend = Friend::where('user_id', auth()->id())->where('friend_id', $id)->exists();
         if ($existFriend) {
-            return redirect()->route('home')->with('notice', '已在好友名單中');
+            return redirect()->route('addpage')->with('notice', '已在好友名單中');
         }
         $existingRequest = FriendRequest::where('receiver_id', $id)
             ->where('sender_id', auth()->id())
             ->exists();
         if ($existingRequest) {
-            return redirect()->route('home')->with('notice', '無法重複提出交友邀請!');
+            return redirect()->route('addpage')->with('notice', '無法重複提出交友邀請!');
         }
         $data['sender_id'] = auth()->id();
         $data['receiver_id'] = $id;
         FriendRequest::create($data);
 
-        return Inertia::location('/friend')->with('notice', '加入成功');
+        return Inertia::location('/friend/addpage')->with('notice', '加入成功');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show()
+    public function show(): \Inertia\Response
     {
         $id = auth()->id();
         $friendRequests = FriendRequest::where('receiver_id', $id)->get();
@@ -86,25 +80,9 @@ class FriendController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request): void
     {
         $user_id = auth()->id();
         $friend_id = $request->input('friend_id');
@@ -114,7 +92,7 @@ class FriendController extends Controller
     }
 
     // 接受好友邀請
-    public function accept(Request $request)
+    public function accept(Request $request): \Inertia\Response
     {
         $user_id = auth()->id();
         $friend_id = $request->input('friend_id');
@@ -137,7 +115,7 @@ class FriendController extends Controller
     }
 
     //拒絕好友邀請
-    public function cancel(Request $request)
+    public function cancel(Request $request): \Inertia\Response
     {
         $sender_id = $request->input('friend_id');
         $receiver_id = auth()->id();
@@ -146,11 +124,36 @@ class FriendController extends Controller
         return Inertia::render('FriendInvite', ['senders' => []]);
     }
 
-    public function onlineUsers()
+    public function onlineUsers(): \Inertia\Response
     {
         return Inertia::render('Online', [
             'users' => User::where('id', '!=', auth()->id())->get(),
             'user_id' => auth()->id()
+        ]);
+    }
+
+    public function getPortal(): \Inertia\Response
+    {
+        return Inertia::render('Friendportal',[]);
+    }
+
+    public function addPage(): \Inertia\Response
+    {
+        $temps = auth()->user()->friends()->get();
+        $friends = [];
+        foreach ($temps as $temp) {
+            $user = User::where('id', $temp->friend_id)->get();
+            if ($user) {
+                $friends[] = $user->first();
+            }
+        }
+        $user = User::where('id', auth()->id())->get();
+
+        return Inertia::render('Addpage', [
+            'friends' => $friends,
+            'notice' => session()->get('notice'), // 传递通知信息
+            'csrfToken' => csrf_token(),
+            'user' => $user,
         ]);
     }
 }

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\MessageController;
@@ -25,11 +24,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile', [ProfileController::class, 'upload'])->name('profile.upload');
 });
 
 Route::middleware('auth')->group(function () {
     Route::prefix('friend')->group(function () {
+        Route::get('/portal', [FriendController::class, 'getPortal'])->name('portal');
         Route::get('/', [FriendController::class, 'index'])->name('home');
+        Route::get('/addpage', [FriendController::class, 'addPage'])->name('addpage');
         Route::get('/online-users', [FriendController::class, 'onlineUsers'])->name('online');
         Route::post('/store', [FriendController::class, 'store'])->name('friendreq');
         Route::get('/list', [FriendController::class, 'show'])->name('requestlist');
@@ -41,9 +43,5 @@ Route::middleware('auth')->group(function () {
         Route::post('/send', [MessageController::class, 'sendMessage'])->name('send');
     });
 });
-
-Route::get('/index', [HomeController::class, 'index'])->middleware(['auth', 'verified']);
-
-
 
 require __DIR__.'/auth.php';

@@ -13,3 +13,13 @@ window.Echo = new Echo({
     enabledTransports: ['ws', 'wss'],
 });
 
+
+// window.Echo = new Echo({
+//     broadcaster: 'reverb',
+//     key: 'bnxrlamr45txee3hryup',
+//     wsHost: 'reverb.lis56568-service.com',
+//     wsPort: 80,
+//     wssPort: 443,
+//     forceTLS: 'https',
+//     enabledTransports: ['ws', 'wss'],
+// });

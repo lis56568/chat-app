@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref, nextTick, watch } from "vue";
-const { friend, id } = defineProps(
+import {computed, ref } from "vue";
+const { friend, id, csrfToken } = defineProps(
     [
         'friend',
         'id',
@@ -29,8 +29,8 @@ const sendMessage = () => {
     axios.post('/friend/send', {
         sender_id: id,
         receiver_id: friend[0]['id'],
-        text: newMessage.value
-    }).then(async () => {
+        message: newMessage.value
+    }).then( () => {
         newMessage.value = '';
     }).catch(error => {
         console.error(error);
@@ -46,17 +46,16 @@ const sendMessage = () => {
                 <span>{{ friend[0]['name'] }}</span>
             </div>
 
-            <div class="message-container flex flex-col-reverse" ref="messageContainer">
-                <div class="messages" v-for="message in messages.slice().reverse()">
-                    <div v-if="message.sender.id === id" >
+            <div class="message-container flex flex-col-reverse">
+                <div class="messages" v-for="msg in messages.slice().reverse()">
+                    <div v-if="msg['sender']['id'] === id" >
                         <div class="right message">
-                            <p>{{ message.message }}</p>
-<!--                            <img width="48" height="48" src="https://img.icons8.com/color/48/user-male-circle&#45;&#45;v1.png" alt="Profile picture" style="margin-left: 10px"/>-->
+                            <p>{{ msg.message }}</p>
                         </div>
                     </div>
                     <div v-else class="left message">
                         <img width="48" height="48" src="https://img.icons8.com/color/48/user-male-circle--v1.png" alt="Profile picture" style="margin-right: 10px"/>
-                        <p>{{message.message}}</p>
+                        <p>{{ msg.message }}</p>
                     </div>
                 </div>
             </div>
@@ -107,7 +106,7 @@ a {
 }
 
 .messages {
-    padding: 15px 0px 10px 0px;
+    padding: 1px 0px 10px 0px;
 }
 
 .bottom {

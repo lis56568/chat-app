@@ -7,6 +7,13 @@ services:
             dockerfile: ./docker/Dockerfile
         env_file:
             - .env
+        environment:
+            - VITE_REVERB_APP_ID=145124
+            - VITE_REVERB_APP_KEY=bnxrlamr45txee3hryup
+            - VITE_REVERB_APP_SECRET=fsqdmzlztdphgdtrfsba
+            - VITE_REVERB_HOST="reverb.lis56568-service.com"
+            - VITE_REVERB_PORT=443
+            - VITE_REVERB_SCHEME=https
         networks:
             - dev
         restart: unless-stopped
@@ -35,6 +42,11 @@ services:
             - 3306:3306
         env_file:
             - .env
+        environment:
+            MARIADB_ROOT_PASSWORD: root
+            MARIADB_DATABASE: mariadb
+            MARIADB_USER: sail
+            MARIADB_PASSWORD: password
         networks:
             - dev
         volumes:

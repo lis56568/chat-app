@@ -1,4 +1,7 @@
 <script setup>
+
+import {onMounted, ref} from 'vue'
+
 const props = defineProps(
     [
         'notice',
@@ -7,29 +10,21 @@ const props = defineProps(
         'user'
     ]
 )
-const getRoute = (name) => {
-    const routes = {
-        addpage: '/friend/addpage',
-        requestlist: '/friend/list',
-    };
-    return routes[name];
-};
+const visible = ref(false);
+const fading = ref(false);
 
-// const visible = ref(false);
-// const fading = ref(false);
-
-// onMounted(() => {
-//     if (props.notice != null) {
-//         visible.value = true;
-//         setTimeout(() => {
-//             fading.value = true;
-//             setTimeout(() => {
-//                 visible.value = false;
-//                 fading.value = false;
-//             }, 1000); // 1 秒的淡化时间
-//         }, 3000); // 3 秒后开始淡化
-//     }
-// });
+onMounted(() => {
+    if (props.notice != null) {
+        visible.value = true;
+        setTimeout(() => {
+            fading.value = true;
+            setTimeout(() => {
+                visible.value = false;
+                fading.value = false;
+            }, 1000); // 1 秒的淡化时间
+        }, 3000); // 3 秒后开始淡化
+    }
+});
 </script>
 <template>
     <div class="flex flex-col items-center justify-center h-screen bg-gray-200">
@@ -44,49 +39,28 @@ const getRoute = (name) => {
                 <img width="64" height="64" src="https://img.icons8.com/pastel-glyph/64/333333/communication--v2.png" alt="communication--v2"/>
                 <div class="flex mr-2 ml-5">
                     <div>
-                        <span class="text-xl">{{ user[0]['name'] }} # {{ user[0]['id'] }}</span>
+                        <span class="text-2xl">{{ user[0]['name'] }} # {{ user[0]['id'] }}</span>
                         <div class="flex flex-row items-center">
                             <div class="status-dot"></div>
                             <span class="dark:text-gray-500">Online</span>
                         </div>
                     </div>
                 </div>
-                <div class="flex ml-10">
-                    <div class="btn flex items-center">
-                        <img class="mr-2 image" width="20" height="20" src="https://img.icons8.com/ios-filled/50/FFFFFF/new-post.png" alt="new-post"/>
-                        <a :href="getRoute('requestlist')" class="text-xs">好友邀請</a>
-                    </div>
-                    <div class="flex btn items-center">
-                        <img class="mr-2 image" width="20" height="20" src="https://img.icons8.com/external-tanah-basah-glyph-tanah-basah/48/FFFFFF/external-add-user-social-media-ui-tanah-basah-glyph-tanah-basah.png" alt="external-add-user-social-media-ui-tanah-basah-glyph-tanah-basah"/>
-                        <a :href="getRoute('addpage')" class="text-xs">加入好友</a>
-                    </div>
-                </div>
             </div>
 
-<!--            <div class="mid flex justify-center">-->
-<!--                <form method="POST" action="/friend/store">-->
-<!--                    <div>-->
-<!--                        <input type="text" name="friend_id" class="addID" placeholder="輸入好友代碼">-->
-<!--                        <input type="hidden" v-model="props.csrfToken" name="_token">-->
-<!--                        <button class="btn" type="submit">加入好友</button>-->
-<!--                    </div>-->
-<!--                </form>-->
-<!--            </div>-->
-            <div class="friendlist">
-                <ul v-if="props.friends.length > 0">
-                    <li v-for="friend in props.friends" :key="friend.id" class="chat">
-                        <form method="GET" :action="'/friend/chat/' + friend.id">
-                            {{ friend.name }}
-                            <button type="submit">聊天</button>
-                        </form>
-                    </li>
-                </ul>
-                <p v-else>您尚未有好友！</p>
+            <div class="mid flex justify-center">
+                <form method="POST" action="/friend/store">
+                    <div>
+                        <input type="text" name="friend_id" class="addID" placeholder="輸入好友代碼">
+                        <input type="hidden" v-model="props.csrfToken" name="_token">
+                        <button class="btn" type="submit">送出邀請</button>
+                    </div>
+                </form>
             </div>
         </div>
         <div class="flex justify-start mt-5 items-center">
             <img width="24" height="24" src="https://img.icons8.com/material-sharp/24/333333/arrow-pointing-left.png" alt="arrow-pointing-left"/>
-            <a :href="route('dashboard')" class="ml-3">Go to Dashboard</a>
+            <a :href="route('home')" class="ml-3">Back</a>
         </div>
     </div>
 </template>
@@ -147,8 +121,8 @@ li{
     width: 500px;
     height: 100px;
     border-bottom: 1px solid #e8e5e5;
-    margin-top: 20px;
     margin-bottom: 10px;
+    margin-top: 20px;
     padding-bottom: 30px;
 }
 
@@ -171,6 +145,30 @@ li{
     height: max-content;
 }
 
+.notice {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.notification-container {
+    position: absolute;
+    top: 40px;
+    display: flex;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: opacity 1s ease-out;
+    background-color: #f8d7da;
+}
+
+.fade-out {
+    opacity: 0;
+}
 .status-dot {
     width: 10px;
     height: 10px;
@@ -181,10 +179,6 @@ li{
 
 .chat{
     display: flex;
-}
-
-.image:hover{
-    cursor: pointer;
 }
 
 </style>

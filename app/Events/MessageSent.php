@@ -41,9 +41,22 @@ class MessageSent implements ShouldBroadcast
         $receiver_id = $this->receiver->id;
         $userOneId = min($sender_id, $receiver_id);
         $userTwoId = max($sender_id, $receiver_id);
-
+        Log::info("Sender: {$userOneId}");
+        Log::info("Receiver: {$userTwoId}");
+        Log::info("Message:{$this->message}");
+        Log::info("Broadcasting on chat.{$userOneId}.{$userTwoId}");
         return [
             new PrivateChannel('chat.' . $userOneId . '.' . $userTwoId)
         ];
     }
+
+    public function broadcastWith():array
+    {
+        return [
+            'message' => $this->message,
+            'sender' => $this->sender,
+            'receiver' => $this->receiver,
+        ];
+    }
+
 }
