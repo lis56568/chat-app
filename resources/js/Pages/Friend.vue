@@ -1,12 +1,20 @@
 <script setup>
+
+import { onMounted, ref} from "vue";
+
+
 const props = defineProps(
     [
         'notice',
         'friends',
         'csrfToken',
-        'user'
+        'user',
+        'msg_last'
     ]
 )
+
+
+const last_msg = ref({});
 const getRoute = (name) => {
     const routes = {
         addpage: '/friend/addpage',
@@ -15,33 +23,48 @@ const getRoute = (name) => {
     return routes[name];
 };
 
-// const visible = ref(false);
-// const fading = ref(false);
+const get_chatroom = (id) => {
+    window.location.href = `friend/chat/${id}`;
+}
 
-// onMounted(() => {
-//     if (props.notice != null) {
-//         visible.value = true;
-//         setTimeout(() => {
-//             fading.value = true;
-//             setTimeout(() => {
-//                 visible.value = false;
-//                 fading.value = false;
-//             }, 1000); // 1 秒的淡化时间
-//         }, 3000); // 3 秒后开始淡化
-//     }
-// });
+const get_image = (url) =>{
+    const image = ref('/storage/' + url)
+    return image.value.replace('/public', '');
+}
+
+
+const set_channel = () => {
+        props.friends.forEach(friend => {
+            const num1 = Math.min(props.user[0]['id'], friend['id']);
+            const num2 = Math.max(props.user[0]['id'], friend['id']);
+            const channel = `chat.${num1}.${num2}`;
+            console.log('test');
+            Echo.private(channel)
+                .listen('MessageSent', (e) => {
+                    console.log('websocket connect')
+                    console.log('Received message:', e);
+                    friend['msg'] = "";
+                    last_msg.value[friend.id] = e.message;
+                });
+        });
+};
+
+onMounted(() => {
+    set_channel();
+})
+
+
 </script>
 <template>
     <div class="flex flex-col items-center justify-center h-screen bg-gray-200">
         <div class="container">
-            <div class="notification-container" v-if="visible" :class="{'fade-out': fading}">
-                <div class="notice flex items-center">
-                    <img class="mr-1.5" width="20" height="20" src="https://img.icons8.com/ios-filled/50/721c24/cancel.png" alt="cancel"/>
-                    {{ props.notice }}
-                </div>
-            </div>
             <div class="top flex flex-row justify-center items-center">
-                <img width="64" height="64" src="https://img.icons8.com/pastel-glyph/64/333333/communication--v2.png" alt="communication--v2"/>
+                <div v-if="user[0]['avatar'] === null">
+                    <img width="64" height="64" src="https://img.icons8.com/pastel-glyph/64/333333/communication--v2.png" alt="communication--v2"/>
+                </div>
+                <div v-else>
+                    <img :src="get_image(props.user[0]['avatar'])" alt="avatar" class="rounded-full h-16 w-16 object-cover">
+                </div>
                 <div class="flex mr-2 ml-5">
                     <div>
                         <span class="text-xl">{{ user[0]['name'] }} # {{ user[0]['id'] }}</span>
@@ -63,22 +86,41 @@ const getRoute = (name) => {
                 </div>
             </div>
 
-<!--            <div class="mid flex justify-center">-->
-<!--                <form method="POST" action="/friend/store">-->
-<!--                    <div>-->
-<!--                        <input type="text" name="friend_id" class="addID" placeholder="輸入好友代碼">-->
-<!--                        <input type="hidden" v-model="props.csrfToken" name="_token">-->
-<!--                        <button class="btn" type="submit">加入好友</button>-->
-<!--                    </div>-->
-<!--                </form>-->
-<!--            </div>-->
             <div class="friendlist">
                 <ul v-if="props.friends.length > 0">
-                    <li v-for="friend in props.friends" :key="friend.id" class="chat">
-                        <form method="GET" :action="'/friend/chat/' + friend.id">
-                            {{ friend.name }}
-                            <button type="submit">聊天</button>
-                        </form>
+                    <li v-for="friend in props.friends" :key="friend['id']" class="chat">
+                        <div v-if="friend['avatar'] === null" class="flex items-center friendbt" @click="get_chatroom(friend['id'])">
+                            <div class="flex items-center bt-line">
+                                <img class="mr-8 mt h-12 w-12" src="https://img.icons8.com/external-kiranshastry-lineal-kiranshastry/64/external-user-interface-kiranshastry-lineal-kiranshastry.png" alt="external-user-interface-kiranshastry-lineal-kiranshastry"/>
+                                <div>
+                                    <div class="text">
+                                        {{ friend['name'] }}
+                                    </div>
+                                    <p v-if="friend['msg']" class="last-msg">
+                                        {{ friend['msg'] }}
+                                    </p>
+                                    <p v-else class="last-msg">
+                                        {{ last_msg[friend['id']]  || '點我發送訊息' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="flex items-center friendbt" @click="get_chatroom(friend['id'])">
+                            <div class="flex items-center">
+                                <img class="mr-8 h-12 w-12 rounded-full object-cover bt-line" :src="get_image(friend['avatar'])" alt="external-user-interface-kiranshastry-lineal-kiranshastry"/>
+                                <div>
+                                    <div class="text">
+                                        {{ friend['name'] }}
+                                    </div>
+                                    <p v-if="friend['msg']" class="last-msg">
+                                        {{ friend['msg'] }}
+                                    </p>
+                                    <p v-else class="last-msg">
+                                        {{ last_msg[friend['id']]  || '點我發送訊息' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </li>
                 </ul>
                 <p v-else>您尚未有好友！</p>
@@ -92,19 +134,9 @@ const getRoute = (name) => {
 </template>
 
 <style scoped>
-.notice{
-    background-color:pink;
-    box-sizing:border-box;
-    color:red;
-    margin-bottom: 5px;
-}
-
-.addFriend{
-    margin-bottom: 5px;
-}
 
 li{
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 .container{
@@ -136,12 +168,6 @@ li{
     color: white;
 }
 
-.addID{
-    border-radius: 5px;
-    border: 1px solid #ececec;
-    margin-right: 10px;
-    width: 200px;
-}
 
 .top{
     width: 500px;
@@ -152,14 +178,9 @@ li{
     padding-bottom: 30px;
 }
 
-.mid{
-    margin-top: 10px;
-    height: 100px;
-}
-
 .friendlist{
-    margin-bottom: 150px ;
-    overflow-x: auto;
+    margin-bottom: 100px ;
+    overflow-y: auto;
 }
 
 .btn{
@@ -187,4 +208,32 @@ li{
     cursor: pointer;
 }
 
+.rounded-full {
+    border-radius: 9999px; /* 用一个非常大的值，使其看起来是圆形 */
+}
+
+.friendbt{
+    border-bottom: 1px solid #ececec;
+    padding: 8px 10px;
+    width: 400px;
+}
+
+.friendbt:hover {
+    transition: 0.5s;
+    background-color: #f0f0f0; /* 替换为你想要的颜色 */
+    cursor: pointer;
+}
+
+.bt-line{
+    margin-bottom: 3px;
+}
+
+.last-msg{
+    color: #828282;
+    font-size: 14px;
+}
+
+.text{
+    font-size: 17px;
+}
 </style>

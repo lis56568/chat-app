@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Chat;
 use App\Models\Friend;
 use App\Models\FriendRequest;
 use App\Models\User;
@@ -18,11 +19,27 @@ class FriendController extends Controller
     {
         $temps = auth()->user()->friends()->get();
         $friends = [];
+        $msg_last = [];
         foreach ($temps as $temp) {
             $user = User::where('id', $temp->friend_id)->get();
             if ($user) {
+                $msg = Chat::with(['sender', 'receiver'])
+                    ->where(function ($query) use ($user) {
+                        $query->where('sender_id', $user->first()->id)
+                            ->where('receiver_id', auth()->id());
+                    })->orWhere(function ($query) use ($user) {
+                        $query->where('sender_id', auth()->id())
+                            ->where('receiver_id', $user->first()->id);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->first(['message', 'sender_id', 'receiver_id']);
+                if($msg){
+                    $user->first()->msg = $msg->message;
+                }
                 $friends[] = $user->first();
+
             }
+
         }
         $user = User::where('id', auth()->id())->get();
 
@@ -31,6 +48,7 @@ class FriendController extends Controller
             'notice' => session()->get('notice'), // 传递通知信息
             'csrfToken' => csrf_token(),
             'user' => $user,
+            'msg_last' => $msg_last,
         ]);
     }
 
@@ -76,7 +94,7 @@ class FriendController extends Controller
             $senders[] = $request->sender;
         }
 
-        return Inertia::render('FriendInvite', ['senders' => $senders]);
+        return Inertia::render('FriendInvite', ['senders' => $senders, 'user' => auth()->user()]);
     }
 
     /**
@@ -120,7 +138,7 @@ class FriendController extends Controller
         $sender_id = $request->input('friend_id');
         $receiver_id = auth()->id();
         FriendRequest::where('sender_id', $sender_id)->where('receiver_id', $receiver_id)->delete();
-
+//        return Inertia::location('/FriendInvite', ['senders' => []]);
         return Inertia::render('FriendInvite', ['senders' => []]);
     }
 

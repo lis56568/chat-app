@@ -1,13 +1,15 @@
 <script setup>
-import {computed, ref } from "vue";
-const { friend, id, csrfToken } = defineProps(
+import {computed, ref} from "vue";
+const { friend, id, csrfToken, record } = defineProps(
     [
         'friend',
         'id',
-        'csrfToken'
+        'csrfToken',
+        'record',
     ]
 )
-const messages = ref([]);
+
+const messages = ref(record);
 const newMessage = ref('');
 const messageContainer = ref(null);
 
@@ -36,10 +38,15 @@ const sendMessage = () => {
         console.error(error);
     });
 };
+const get_image = (url) =>{
+    const image = ref('/storage/' + url)
+    return image.value.replace('/public', '');
+}
+
 </script>
 
 <template>
-    <div class="bg-gray-300">
+    <div class="bg-gray-300 flex flex-col">
         <div class="chat" >
             <div class="top">
                 <img width="96" height="96" src="https://img.icons8.com/wired/64/7950F2/chat.png" alt="chat"/>
@@ -54,7 +61,8 @@ const sendMessage = () => {
                         </div>
                     </div>
                     <div v-else class="left message">
-                        <img width="48" height="48" src="https://img.icons8.com/color/48/user-male-circle--v1.png" alt="Profile picture" style="margin-right: 10px"/>
+                        <img v-if="friend[0]['avatar'] === null" width="48" height="48" src="https://img.icons8.com/color/48/user-male-circle--v1.png" alt="Profile picture" style="margin-right: 10px"/>
+                        <img v-else class="h-10 w-10 rounded-full object-cover" :src="get_image(friend[0]['avatar'])" alt="Profile picture" style="margin-right: 10px"/>
                         <p>{{ msg.message }}</p>
                     </div>
                 </div>
@@ -67,6 +75,11 @@ const sendMessage = () => {
                 </button>
             </div>
         </div>
+        <div class="mt-5 flex">
+            <img width="24" height="24" src="https://img.icons8.com/material-sharp/24/7950f2/arrow-pointing-left.png" alt="arrow-pointing-left"/>
+            <a :href="route('home')" class="ml-3">Leave Chat Room</a>
+        </div>
+
     </div>
 </template>
 
@@ -180,6 +193,10 @@ a {
     height: 300px;
     max-height: 300px;
     overflow-y: auto;
+}
+
+.rounded-full {
+    border-radius: 9999px; /* 用一个非常大的值，使其看起来是圆形 */
 }
 
 </style>
