@@ -128,8 +128,14 @@ class FriendController extends Controller
             'friend_id' => $user_id,
         ];
         Friend::create($data);
+        $id = auth()->id();
+        $friendRequests = FriendRequest::where('receiver_id', $id)->get();
+        $senders = [];
+        foreach ($friendRequests as $request) {
+            $senders[] = $request->sender;
+        }
 
-        return Inertia::render('FriendInvite', ['senders' => []]);
+        return Inertia::render('FriendInvite', ['senders' => $senders, 'user' => auth()->user()]);
     }
 
     //拒絕好友邀請
