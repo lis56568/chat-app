@@ -16,6 +16,8 @@ services:
             - VITE_REVERB_SCHEME=https
         networks:
             - dev
+        command:
+            -   ['php', 'artisan', 'storage:link']
         restart: unless-stopped
         depends_on:
             - redis
