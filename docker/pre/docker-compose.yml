@@ -17,7 +17,7 @@ services:
         networks:
             - dev
         command:
-            -   ['php', 'artisan', 'storage:link']
+            -   ['php', '/var/www/html/artisan', 'storage:link']
         restart: unless-stopped
         depends_on:
             - redis
