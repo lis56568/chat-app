@@ -38,6 +38,8 @@ const sendMessage = () => {
         }).catch(error => {
             console.error(error);
         });
+    }else{
+        console.log("not send message!");
     }
 };
 const get_image = (url) =>{
