@@ -28,18 +28,18 @@ const channel = Echo.private(channel_name.value)
         });
     });
 const sendMessage = () => {
-    if (newMessage.value !== null){
+    if (newMessage.value !== null && newMessage.value.trim() !== '') {
         axios.post('/friend/send', {
             sender_id: id,
             receiver_id: friend[0]['id'],
             message: newMessage.value
-        }).then( () => {
+        }).then(() => {
             newMessage.value = '';
         }).catch(error => {
             console.error(error);
         });
-    }else{
-        console.log("not send message!");
+    } else {
+        console.log("Message is empty and will not be sent!");
     }
 };
 const get_image = (url) =>{
