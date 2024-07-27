@@ -28,15 +28,17 @@ const channel = Echo.private(channel_name.value)
         });
     });
 const sendMessage = () => {
-    axios.post('/friend/send', {
-        sender_id: id,
-        receiver_id: friend[0]['id'],
-        message: newMessage.value
-    }).then( () => {
-        newMessage.value = '';
-    }).catch(error => {
-        console.error(error);
-    });
+    if (newMessage.value !== null){
+        axios.post('/friend/send', {
+            sender_id: id,
+            receiver_id: friend[0]['id'],
+            message: newMessage.value
+        }).then( () => {
+            newMessage.value = '';
+        }).catch(error => {
+            console.error(error);
+        });
+    }
 };
 const get_image = (url) =>{
     const image = ref('/storage/' + url)
